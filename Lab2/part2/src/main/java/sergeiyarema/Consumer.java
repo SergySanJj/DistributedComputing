@@ -1,11 +1,14 @@
 package sergeiyarema;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Consumer implements Runnable {
     private static int countingTime = 1000;
+    private static  int cap = 6;
     private List<Item> truckItems;
     private int total = 0;
+    private Semaphore semaphore = new Semaphore(cap);
 
     public Consumer(List<Item> truckItems) {
         this.truckItems = truckItems;
@@ -26,6 +29,7 @@ public class Consumer implements Runnable {
 
                     System.out.println("Necheporchuk counting (" + someItem.getId() + ")");
                     Thread.sleep(countingTime);
+                    semaphore.release();
                 }
             }
         } catch (InterruptedException e) {
@@ -33,5 +37,9 @@ public class Consumer implements Runnable {
         } finally {
             System.out.println("Necheporchuk Total:  " + total);
         }
+    }
+
+    public Semaphore getSemaphore() {
+        return semaphore;
     }
 }

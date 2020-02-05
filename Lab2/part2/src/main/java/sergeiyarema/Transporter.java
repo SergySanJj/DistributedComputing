@@ -8,11 +8,20 @@ public class Transporter implements Runnable {
     private static int carryingTime = 100;
     private List<Item> fromStorage;
     private List<Item> truckItems = new LinkedList<>();
-    private Semaphore prodSemaphore;
 
-    public Transporter(List<Item> fromStorageItems, Semaphore prodSemaphore) {
-        this.fromStorage = fromStorageItems;
+    public void setProdSemaphore(Semaphore prodSemaphore) {
         this.prodSemaphore = prodSemaphore;
+    }
+
+    public void setConSemaphore(Semaphore conSemaphore) {
+        this.conSemaphore = conSemaphore;
+    }
+
+    private Semaphore prodSemaphore;
+    private Semaphore conSemaphore;
+
+    public Transporter(List<Item> fromStorageItems) {
+        this.fromStorage = fromStorageItems;
     }
 
     public List<Item> getTruckItems() {
@@ -41,6 +50,7 @@ public class Transporter implements Runnable {
                 synchronized (truckItems) {
                     Thread.sleep(carryingTime);
                     truckItems.add(someItem);
+                    conSemaphore.acquire();
                     System.out.println("Petrov put item (" + someItem.getId() + ")");
                     truckItems.notify();
                 }
