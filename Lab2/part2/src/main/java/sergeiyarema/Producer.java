@@ -1,53 +1,35 @@
 package sergeiyarema;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
 
 public class Producer implements Runnable {
-    private static int cap = 15;
-    private Queue<Item> items = new LinkedList<>();
-    private Semaphore semaphore = new Semaphore(1);
-    private int N;
+    private static int prodTime = 10;
+    private List<Item> fromStorageItems = new LinkedList<>();
 
-    public Producer(int N) {
-        this.N = N;
-    }
-
-    private void produce() {
-        try {
-            if (items.size() >= cap)
-                return;
-            semaphore.acquire();
-            Item item = new Item();
-            System.out.println("Ivanov found new item " + item.getId());
-            items.add(item);
-            semaphore.release();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public Item get() {
-        if (items.isEmpty())
-            return null;
-        try {
-            semaphore.acquire();
-            Item item = items.remove();
-            semaphore.release();
-            return item;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        }
+    public List<Item> getFromStorageItems() {
+        return fromStorageItems;
     }
 
     @Override
     public void run() {
-        while (N > 0) {
-            produce();
-            N--;
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                Item someItem = getStuff();
+                Thread.sleep(prodTime);
+                synchronized (fromStorageItems) {
+                    fromStorageItems.add(someItem);
+                    System.out.println("Ivanov taking item (" + someItem.getId() + ")");
+                    fromStorageItems.notify();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            System.out.println("Ivanov see no more items at storage");
         }
+    }
+
+    private Item getStuff() {
+        return new Item();
     }
 }

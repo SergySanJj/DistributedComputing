@@ -1,48 +1,37 @@
 package sergeiyarema;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.Semaphore;
+import java.util.*;
 
 public class Consumer implements Runnable {
-    private static int cap = 5;
-    private Integer itemsTotal = 0;
-    private Queue<Item> items = new LinkedList<>();
-    private Semaphore semaphore = new Semaphore(1);
+    private static int countingTime = 1000;
+    private List<Item> truckItems;
+    private int total = 0;
 
-    public Consumer() {
+    public Consumer(List<Item> truckItems) {
+        this.truckItems = truckItems;
     }
 
-    public void take(Item item) {
-        try {
-            semaphore.acquire(1);
-            items.add(item);
-            semaphore.release();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-    }
-
-    public void processItem() {
-        if (items.isEmpty())
-            return;
-
-        Item item = items.remove();
-        System.out.println("Necheporuk analyzing loot with id: " + item.getId());
-        itemsTotal++;
-    }
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-            processItem();
-        }
-        Thread.currentThread().interrupt();
-    }
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                synchronized (truckItems) {
+                    while (truckItems.isEmpty()) {
+                        truckItems.wait();
+                    }
 
-    public int getTotal() {
-        return itemsTotal;
+                    Item someItem = truckItems.remove(0);
+                    total += someItem.getPrice();
+
+                    System.out.println("Necheporchuk counting (" + someItem.getId() + ")");
+                    Thread.sleep(countingTime);
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            System.out.println("Necheporchuk Total:  " + total);
+        }
     }
 }
