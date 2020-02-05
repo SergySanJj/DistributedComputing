@@ -2,14 +2,14 @@ package com.sergeiyarema;
 
 class Semaphore {
     private int maxValue;
-    private int value;
+    private int value = 0;
     private final Object lock = new Object();
 
     public Semaphore(int maxValue) {
         this.maxValue = maxValue;
     }
 
-    public void enter() {
+    public void acquire() {
         synchronized (lock) {
             value++;
             while (value > maxValue) {
@@ -22,7 +22,7 @@ class Semaphore {
         }
     }
 
-    public void leave() {
+    public void release() {
         synchronized (lock) {
             if (value > 0)
                 value--;
