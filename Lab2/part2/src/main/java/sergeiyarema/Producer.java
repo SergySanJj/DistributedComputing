@@ -1,20 +1,27 @@
 package sergeiyarema;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Producer implements Runnable {
     private static int prodTime = 10;
+    private static int cap = 5;
+    private final Semaphore semaphore= new Semaphore(cap,true);
     private List<Item> fromStorageItems = new LinkedList<>();
 
     public List<Item> getFromStorageItems() {
         return fromStorageItems;
+    }
+    public Semaphore getSemaphore(){
+        return semaphore;
     }
 
     @Override
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                Item someItem = getStuff();
+                semaphore.acquire();
+                Item someItem = findItem();
                 Thread.sleep(prodTime);
                 synchronized (fromStorageItems) {
                     fromStorageItems.add(someItem);
@@ -25,11 +32,11 @@ public class Producer implements Runnable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            System.out.println("Ivanov see no more items at storage");
+            System.out.println("Ivanov has no more time");
         }
     }
 
-    private Item getStuff() {
+    private Item findItem() {
         return new Item();
     }
 }

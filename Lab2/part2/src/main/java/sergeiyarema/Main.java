@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Main {
     public static void main(String[] args) {
         Producer producer = new Producer();
-        Transporter transporter = new Transporter(producer.getFromStorageItems());
+        Transporter transporter = new Transporter(producer.getFromStorageItems(),producer.getSemaphore());
         Consumer consumer = new Consumer(transporter.getTruckItems());
 
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
