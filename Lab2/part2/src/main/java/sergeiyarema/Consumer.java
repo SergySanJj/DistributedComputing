@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class Consumer implements Runnable {
-    private static int countingTime = 1000;
+    private static int countingTime = 200;
     private static  int cap = 6;
     private List<Item> truckItems;
     private int total = 0;

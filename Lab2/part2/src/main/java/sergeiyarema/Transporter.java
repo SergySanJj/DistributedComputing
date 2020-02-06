@@ -44,14 +44,14 @@ public class Transporter implements Runnable {
                 prodSemaphore.release();
 
 
-                System.out.println("Petrov take item from Ivanov (" + someItem.getId() + ")");
+                System.out.println("Petrov takes item from Ivanov (" + someItem.getId() + ")");
                 Thread.sleep(carryingTime);
 
                 synchronized (truckItems) {
                     Thread.sleep(carryingTime);
                     truckItems.add(someItem);
                     conSemaphore.acquire();
-                    System.out.println("Petrov put item (" + someItem.getId() + ")");
+                    System.out.println("Petrov puts item (" + someItem.getId() + ")");
                     truckItems.notify();
                 }
 
