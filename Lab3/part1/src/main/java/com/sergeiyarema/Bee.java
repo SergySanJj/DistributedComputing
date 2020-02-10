@@ -1,21 +1,30 @@
 package com.sergeiyarema;
 
 public class Bee implements Runnable {
-    HoneyPot honeyPot;
+    private static int maxId = 0;
+    private HoneyPot honeyPot;
+    private int beeId;
 
     public Bee(HoneyPot honeyPot) {
         this.honeyPot = honeyPot;
+        this.beeId = maxId;
+        maxId++;
     }
 
     @Override
     public void run() {
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        honeyPot.createOneHoneyPoint();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
 
-        System.out.println("Bee creates honey " + honeyPot.getCurrentHoney() + "/" + HoneyPot.capacity);
+            honeyPot.subscribe(
+                    () -> honeyPot.isFull(),
+                    () -> honeyPot.addHoney("Bee " + beeId + " adds honey"),
+                    () -> honeyPot.isFull()
+            );
+    }
     }
 }

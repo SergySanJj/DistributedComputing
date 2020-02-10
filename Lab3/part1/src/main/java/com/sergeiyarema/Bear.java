@@ -10,11 +10,17 @@ public class Bear implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            honeyPot.runAction(() -> {
-                System.out.println("Bear awakes");
-                System.out.println("Bear eats " + honeyPot.getCurrentHoney() + " honey");
-                honeyPot.eatAll();
-            });
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            honeyPot.subscribe(
+                    () -> !honeyPot.isFull(),
+                    () -> honeyPot.eatAllHoney(),
+                    () -> true
+            );
         }
     }
 }

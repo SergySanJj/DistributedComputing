@@ -2,17 +2,18 @@ package com.sergeiyarema;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
-        int beeCount = 10;
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        int beeCount = 4;
+        ThreadPoolExecutor bearExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         HoneyPot honeyPot = new HoneyPot();
         Bear bear = new Bear(honeyPot);
-        BeeHive beeHive = new BeeHive(honeyPot, beeCount);
+        Hive hive = new Hive(beeCount, honeyPot);
 
-        executor.execute(bear);
-        executor.execute(beeHive);
+        bearExecutor.execute(bear);
+        hive.startHiveWorkers();
 
         try {
             Thread.sleep(5000);
@@ -20,6 +21,12 @@ public class Main {
             e.printStackTrace();
         }
 
-        executor.shutdownNow();
+        try {
+            bearExecutor.shutdownNow();
+            bearExecutor.awaitTermination(0, TimeUnit.MILLISECONDS);
+            hive.stopHiveWorkers();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
