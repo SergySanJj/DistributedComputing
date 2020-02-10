@@ -8,10 +8,10 @@ public class HoneyPot {
     private int currentHoney = 0;
     private final Object mutex = new Object();
 
-    public void subscribe(Statement statement, Action action, Statement wakeUpCondition) {
+    public void subscribe(Statement waitIfStatement, Action action, Statement wakeUpCondition) {
         try {
             synchronized (mutex) {
-                while (Boolean.TRUE.equals(statement.isTrue())) {
+                while (Boolean.TRUE.equals(waitIfStatement.isTrue())) {
                     mutex.wait();
                 }
                 action.act();
