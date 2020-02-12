@@ -1,33 +1,29 @@
 package com.sergeiyarema;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     public static void main(String args[]) {
         Barbershop barbershop = new Barbershop();
+        CustomerGenerator customerGenerator = new CustomerGenerator(barbershop);
         Barber barber = new Barber(barbershop);
 
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        executor.submit(barber);
-
-        for (int i = 0; i < 10; i++) {
-            executor.submit(new Customer(barbershop));
-        }
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        executor.execute(barber);
+        executor.execute(customerGenerator);
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-//        executor.shutdownNow();
-//        try {
-//            executor.awaitTermination(0, TimeUnit.MICROSECONDS);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//        }
+        try {
+            executor.shutdownNow();
+            executor.awaitTermination(0, TimeUnit.MICROSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

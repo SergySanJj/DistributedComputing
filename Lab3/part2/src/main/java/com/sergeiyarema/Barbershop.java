@@ -1,71 +1,49 @@
 package com.sergeiyarema;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Barbershop {
-    private Queue<Customer> queue = new LinkedList<>();
-    private final Object chair = new Object();
-    private Customer currentCustomer = null;
+    private AtomicInteger spaces = new AtomicInteger(15);
+    private final Semaphore barbers = new Semaphore(1, true);
+    private final Semaphore customers = new Semaphore(0, true);
 
-    private final Object barberNotifier = new Object();
-
-    public void standInQueue(Customer customer) {
-        queue.add(customer);
-    }
-
-    public boolean isEmpty() {
-        synchronized (chair) {
-            return queue.isEmpty();
+    public void callBarber(){
+        try {
+            barbers.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    public Customer getNextCustomer() {
-        synchronized (chair) {
-//            System.out.println("Getting next customer");
-            if (currentCustomer != null) {
-                return currentCustomer;
-            } else if (!isEmpty()) {
-                return queue.remove();
-            }
-            return null;
+    public void freeBarber() {
+        barbers.release();
+    }
+
+    public void freeCustomerQueue(){
+        customers.release();
+    }
+
+    public void pollCustomer() {
+        try {
+            customers.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    public boolean isBarberWorking() {
-        return currentCustomer != null;
+    public int getSpace(){
+        return spaces.get();
+    }
+    public void decSpace(){
+        spaces.decrementAndGet();
     }
 
-    public Object getBarberNotifier() {
-        synchronized (barberNotifier) {
-            return barberNotifier;
-        }
+    public void incSpace(){
+        spaces.incrementAndGet();
     }
 
-    public void wakeUpBarber() {
-        barberNotifier.notify();
+    public boolean hasWaitingCustomers(){
+        return barbers.hasQueuedThreads();
     }
-
-
-    public void trySitInChair(Customer customer) {
-        synchronized (chair) {
-            if (currentCustomer != null) {
-                System.out.println("Customer stands in line");
-                queue.add(customer);
-            } else {
-                System.out.println("Sitting in chair");
-                currentCustomer = customer;
-            }
-        }
-    }
-
-
-    public void freeChair() {
-        synchronized (chair) {
-            currentCustomer = null;
-        }
-    }
-
-
 }

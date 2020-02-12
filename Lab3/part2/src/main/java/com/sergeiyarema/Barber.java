@@ -1,6 +1,8 @@
 package com.sergeiyarema;
 
-import javax.swing.plaf.TableHeaderUI;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Barber implements Runnable {
     private Barbershop barbershop;
@@ -11,23 +13,16 @@ public class Barber implements Runnable {
 
     @Override
     public void run() {
-        Customer customer;
         while (!Thread.currentThread().isInterrupted()) {
-            while ((customer = barbershop.getNextCustomer()) == null) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-//                System.out.println("Barber starts to sleep");
-//                try {
-//                    barbershop.getBarberNotifier().wait();
-//                } catch (InterruptedException e) {
-//                    Thread.currentThread().interrupt();
-//                }
+            try {
+                barbershop.pollCustomer();
+                System.out.println("Customer getting hair cut");
+                Thread.sleep(1000);
+                System.out.println("Customer Pays and leaves");
+                barbershop.freeBarber();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-            customer.shave();
-            barbershop.freeChair();
         }
     }
 }

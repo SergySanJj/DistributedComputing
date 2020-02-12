@@ -1,47 +1,34 @@
 package com.sergeiyarema;
 
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Customer implements Runnable {
-    private static int maxId = 0;
+    private static int maxID = 0;
+
     private int id;
-    private final Object sleepObject = new Object();
     private Barbershop barbershop;
-    private Boolean shaved = false;
 
     public Customer(Barbershop barbershop) {
+        id = maxID;
+        maxID++;
         this.barbershop = barbershop;
-        id = maxId;
-        maxId++;
     }
 
     @Override
     public void run() {
-        System.out.println("New Customer " + id);
-//        if (!barbershop.isBarberWorking())
-//            barbershop.getBarberNotifier().notify();
-        synchronized (shaved) {
-            barbershop.trySitInChair(this);
+        System.out.println("Customer " + id + " walks in");
+        if (barbershop.getSpace() < 0) {
+            System.out.println("Customer " + id + " walks out");
         }
-        while (!shaved) {
-            try {
-                sleepObject.wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    public void shave() {
-        System.out.println("Shaved " + id);
-        synchronized (shaved) {
-            shaved = true;
-            sleepObject.notify();
+        barbershop.freeCustomerQueue();
+        if (barbershop.hasWaitingCustomers()) {
+            barbershop.decSpace();
+            System.out.println("Customer " + id + " waits");
+            barbershop.callBarber();
+            barbershop.incSpace();
+        } else {
+            barbershop.callBarber();
         }
     }
-
-    public void wakeUp() {
-        sleepObject.notify();
-    }
-
 }
