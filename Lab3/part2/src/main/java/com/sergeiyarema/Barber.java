@@ -10,16 +10,12 @@ public class Barber implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            Customer customer = barbershop.pollCustomer();
-            if (customer == null)
-                continue;
-            try {
-                customer.getHaircut();
-                countCustomerCheck(customer);
-                barbershop.freeBarber();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            barbershop.pollCustomer(
+                    (customer) -> {
+                        customer.getHaircut();
+                        countCustomerCheck(customer);
+                    }
+            );
         }
     }
 

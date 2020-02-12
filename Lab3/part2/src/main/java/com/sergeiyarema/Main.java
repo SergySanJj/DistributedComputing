@@ -15,6 +15,7 @@ public class Main {
         stopAfter(executor, Config.Main.workTime);
     }
 
+
     private static void stopAfter(ExecutorService executor, int workTime) {
         try {
             Thread.sleep(workTime);

@@ -12,29 +12,26 @@ public class Customer implements Runnable {
         this.barbershop = barbershop;
     }
 
+    @Override
+    public void run() {
+        barbershop.handleNewCustomer(this,
+                () -> System.out.println("Customer " + id + " walks in"),
+                () -> System.out.println("Customer " + id + " waits"),
+                () -> System.out.println("Customer " + id + " sits"),
+                () -> System.out.println("Customer " + id + " walks out")
+        );
+    }
+
     public int getId() {
         return id;
     }
 
-    @Override
-    public void run() {
-        System.out.println("Customer " + id + " walks in");
-        if (barbershop.getSpace() < 0) {
-            System.out.println("Customer " + id + " walks out");
+    public void getHaircut() {
+        try {
+            Thread.sleep(Config.Customer.hairstyleTime);
+            System.out.println("Customer " + getId() + " getting haircut");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-        barbershop.freeCustomerQueue();
-        if (barbershop.hasWaitingCustomers()) {
-            barbershop.decSpace();
-            System.out.println("Customer " + id + " waits");
-            barbershop.sitInChair(this);
-            barbershop.incSpace();
-        } else {
-            barbershop.sitInChair(this);
-        }
-    }
-
-    public void getHaircut() throws InterruptedException {
-        Thread.sleep(Config.Customer.hairstyleTime);
-        System.out.println("Customer " + getId() + " getting hair cut");
     }
 }

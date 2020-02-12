@@ -6,69 +6,96 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Barbershop {
     private AtomicInteger queueSpace = new AtomicInteger(Config.Barbershop.queueCapacity);
     private final Semaphore barbers = new Semaphore(1, true);
-    private final Semaphore customers = new Semaphore(0, true);
+    private final Semaphore customers = new Semaphore(1, true);
     private final Object chairMutex = new Object();
 
     private Customer currentCustomer;
 
+    public void handleNewCustomer(Customer customer,
+                                  Action onEnter,
+                                  Action onWait,
+                                  Action onSit,
+                                  Action onDecline) {
 
-    public Object chairMutex() {
-        return chairMutex;
+        onEnter.act();
+        if (getSpace() <= 0) {
+            onDecline.act();
+            return;
+        }
+        standInQueue();
+
+        if (hasWaitingCustomers()) {
+            decSpace();
+            onWait.act();
+            sitInChair(customer, onSit);
+            incSpace();
+        } else {
+            sitInChair(customer, onSit);
+        }
+
     }
 
     public void freeBarber() {
         barbers.release();
     }
 
-    public void freeCustomerQueue() {
-        customers.release();
-    }
-
-    public Customer pollCustomer() {
-        boolean hasFallenAsleep = false;
-        if (!customers.hasQueuedThreads()) {
-            System.out.println("Barber see no clients so he sleeps");
-            hasFallenAsleep = true;
-        }
+    public void standInQueue() {
         try {
-            customers.acquire();
-            if (hasFallenAsleep) {
-                System.out.println("Barber was waken up by Customer " + currentCustomer.getId());
+            synchronized (chairMutex) {
+                customers.acquire();
             }
-            return currentCustomer;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        return null;
+    }
+
+    public void pollCustomer(ActionWithCustomer action) {
+        customers.release();
+        if (currentCustomer == null)
+            return;
+        action.act(currentCustomer);
+        freeBarber();
     }
 
     public int getSpace() {
-        return queueSpace.get();
+        synchronized (chairMutex) {
+            return queueSpace.get();
+        }
     }
 
     public void decSpace() {
-        queueSpace.decrementAndGet();
+        synchronized (chairMutex) {
+            queueSpace.decrementAndGet();
+        }
     }
 
     public void incSpace() {
-        queueSpace.incrementAndGet();
+        synchronized (chairMutex) {
+            queueSpace.incrementAndGet();
+        }
     }
 
     public boolean hasWaitingCustomers() {
-        return barbers.hasQueuedThreads();
+        synchronized (chairMutex) {
+            return barbers.hasQueuedThreads();
+        }
     }
 
-    public void sitInChair(Customer customer) {
+    public void sitInChair(Customer customer, Action onSit) {
         try {
             barbers.acquire();
-            currentCustomer = customer;
-            System.out.println("Customer " + customer.getId() + " sits");
+            synchronized (chairMutex) {
+                currentCustomer = customer;
+            }
+            onSit.act();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
     public void freeChair() {
-        currentCustomer = null;
+        synchronized (chairMutex) {
+            currentCustomer = null;
+        }
     }
 }
