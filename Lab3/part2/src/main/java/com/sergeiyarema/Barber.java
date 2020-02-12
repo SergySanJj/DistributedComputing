@@ -1,30 +1,34 @@
 package com.sergeiyarema;
 
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
+import javax.swing.plaf.TableHeaderUI;
 
 public class Barber implements Runnable {
-    private BarbershopQueue queue = new BarbershopQueue();
-    private final Object sleep = new Object();
+    private Barbershop barbershop;
+
+    public Barber(Barbershop barbershop) {
+        this.barbershop = barbershop;
+    }
 
     @Override
     public void run() {
+        Customer customer;
         while (!Thread.currentThread().isInterrupted()) {
-            while (queue.isEmpty()) {
+            while ((customer = barbershop.getNextCustomer()) == null) {
                 try {
-                    System.out.println("Barber starts to sleep");
-                    sleep.wait();
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+//                System.out.println("Barber starts to sleep");
+//                try {
+//                    barbershop.getBarberNotifier().wait();
+//                } catch (InterruptedException e) {
+//                    Thread.currentThread().interrupt();
+//                }
             }
-
-
+            customer.shave();
+            barbershop.freeChair();
         }
-    }
-
-    public void wakeUp(){
-        sleep.notify();
     }
 }
 
