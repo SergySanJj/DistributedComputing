@@ -4,46 +4,71 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Barbershop {
-    private AtomicInteger spaces = new AtomicInteger(15);
+    private AtomicInteger queueSpace = new AtomicInteger(Config.Barbershop.queueCapacity);
     private final Semaphore barbers = new Semaphore(1, true);
     private final Semaphore customers = new Semaphore(0, true);
+    private final Object chairMutex = new Object();
 
-    public void callBarber(){
-        try {
-            barbers.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private Customer currentCustomer;
+
+
+    public Object chairMutex() {
+        return chairMutex;
     }
 
     public void freeBarber() {
         barbers.release();
     }
 
-    public void freeCustomerQueue(){
+    public void freeCustomerQueue() {
         customers.release();
     }
 
-    public void pollCustomer() {
+    public Customer pollCustomer() {
+        boolean hasFallenAsleep = false;
+        if (!customers.hasQueuedThreads()) {
+            System.out.println("Barber see no clients so he sleeps");
+            hasFallenAsleep = true;
+        }
         try {
             customers.acquire();
+            if (hasFallenAsleep) {
+                System.out.println("Barber was waken up by Customer " + currentCustomer.getId());
+            }
+            return currentCustomer;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return null;
+    }
+
+    public int getSpace() {
+        return queueSpace.get();
+    }
+
+    public void decSpace() {
+        queueSpace.decrementAndGet();
+    }
+
+    public void incSpace() {
+        queueSpace.incrementAndGet();
+    }
+
+    public boolean hasWaitingCustomers() {
+        return barbers.hasQueuedThreads();
+    }
+
+    public void sitInChair(Customer customer) {
+        try {
+            barbers.acquire();
+            currentCustomer = customer;
+            System.out.println("Customer " + customer.getId() + " sits");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    public int getSpace(){
-        return spaces.get();
-    }
-    public void decSpace(){
-        spaces.decrementAndGet();
-    }
-
-    public void incSpace(){
-        spaces.incrementAndGet();
-    }
-
-    public boolean hasWaitingCustomers(){
-        return barbers.hasQueuedThreads();
+    public void freeChair() {
+        currentCustomer = null;
     }
 }

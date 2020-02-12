@@ -1,7 +1,6 @@
 package com.sergeiyarema;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CustomerGenerator implements Runnable {
     private Barbershop barbershop;
@@ -15,7 +14,9 @@ public class CustomerGenerator implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                Thread.sleep(ThreadLocalRandom.current().nextInt(100, 1000 + 100));
+                Thread.sleep(
+                        ThreadLocalRandom.current().
+                                nextInt(Config.Customer.generationInterval, Config.Customer.generationSigma));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -24,7 +25,7 @@ public class CustomerGenerator implements Runnable {
 
         try {
             executorService.shutdownNow();
-            executorService.awaitTermination(0,TimeUnit.MICROSECONDS);
+            executorService.awaitTermination(0, TimeUnit.MICROSECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

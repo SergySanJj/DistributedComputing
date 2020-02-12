@@ -1,8 +1,5 @@
 package com.sergeiyarema;
 
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Customer implements Runnable {
     private static int maxID = 0;
 
@@ -15,6 +12,10 @@ public class Customer implements Runnable {
         this.barbershop = barbershop;
     }
 
+    public int getId() {
+        return id;
+    }
+
     @Override
     public void run() {
         System.out.println("Customer " + id + " walks in");
@@ -25,10 +26,15 @@ public class Customer implements Runnable {
         if (barbershop.hasWaitingCustomers()) {
             barbershop.decSpace();
             System.out.println("Customer " + id + " waits");
-            barbershop.callBarber();
+            barbershop.sitInChair(this);
             barbershop.incSpace();
         } else {
-            barbershop.callBarber();
+            barbershop.sitInChair(this);
         }
+    }
+
+    public void getHaircut() throws InterruptedException {
+        Thread.sleep(Config.Customer.hairstyleTime);
+        System.out.println("Customer " + getId() + " getting hair cut");
     }
 }
