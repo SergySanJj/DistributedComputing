@@ -15,12 +15,7 @@ public class Main {
         db.dropDatabase();
         DatabaseController dbController = new DatabaseController(db);
 
-        dbController.addRecord("a", "1");
-        dbController.addRecord("b", "2");
-        dbController.addRecord("c", "3");
-
-        dbController.deleteRecord("b", "2");
-//        startAllRunners(dbController);
+        startAllRunners(dbController);
     }
 
     private static void startAllRunners(DatabaseController dbController) {
@@ -39,6 +34,11 @@ public class Main {
             waitFor(200);
         });
         addUser.startAll();
+        Runner removeUser = new Runner(2, () -> {
+            dbController.deleteRecord(randomUsername(), randomPhone());
+            waitFor(100);
+        });
+        removeUser.startAll();
     }
 
     private static String randomPhone() {
