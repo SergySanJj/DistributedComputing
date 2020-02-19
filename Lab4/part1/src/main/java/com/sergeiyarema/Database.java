@@ -4,7 +4,6 @@ import java.io.*;
 
 public class Database {
     private String databaseName;
-    private FileWriter fileWriter;
 
     private Database(String databaseName) throws IOException {
         this.databaseName = databaseName;
@@ -23,13 +22,17 @@ public class Database {
             e.printStackTrace();
         }
     }
-    public void dropDatabase() throws IOException {
-        new FileWriter(databaseName+".txt");
+
+    public String getDatabaseFileName() {
+        return databaseName + ".txt";
     }
 
-    public PrintWriter getWriteHandler() throws IOException {
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(databaseName+".txt", true)));
-        return out;
+    public void dropDatabase() throws IOException {
+        new FileWriter(databaseName + ".txt");
+    }
+
+    public FileWriter getWriteHandler() throws IOException {
+        return new FileWriter(databaseName + ".txt", true);
     }
 
     public FileReader getReadHandler() throws FileNotFoundException {

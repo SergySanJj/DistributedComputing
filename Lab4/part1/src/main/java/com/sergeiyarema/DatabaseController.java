@@ -18,10 +18,10 @@ public class DatabaseController {
     }
 
     public List<String> getPhoneNumbers(String username) {
-        List<String> res = new ArrayList<>();
         try {
             readLock.lock();
 
+            List<String> res = new ArrayList<>();
             BufferedReader fileReader = new BufferedReader(database.getReadHandler());
             String line = fileReader.readLine();
             while (line != null) {
@@ -41,11 +41,10 @@ public class DatabaseController {
     }
 
     public String getUsername(String phoneNumber) {
-        BufferedReader fileReader = null;
         try {
             readLock.lock();
 
-            fileReader = new BufferedReader(database.getReadHandler());
+            BufferedReader fileReader = new BufferedReader(database.getReadHandler());
             String line = fileReader.readLine();
             while (line != null) {
                 if (parseRow(line, 1).equals(phoneNumber)) {
@@ -86,13 +85,43 @@ public class DatabaseController {
         PrintWriter pw = null;
         try {
             writeLock.lock();
-            pw = database.getWriteHandler();
+            pw = new PrintWriter(new BufferedWriter(database.getWriteHandler()));
             pw.println(username + " " + phoneNumber);
             System.out.println("Adding: " + username + " " + phoneNumber);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             pw.close();
+            writeLock.unlock();
+        }
+    }
+
+    public void deleteRecord(String username, String phoneNumber) {
+        try {
+            writeLock.lock();
+            System.out.println("Trying to remove: " + username + " " + phoneNumber);
+            File tempFile = new File("temp.txt");
+
+            BufferedReader reader = new BufferedReader(database.getReadHandler());
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+            String curr;
+            String remove = username + " " + phoneNumber;
+            while ((curr = reader.readLine()) != null) {
+                String trimmedLine = curr.trim();
+                if (trimmedLine.equals(remove)) continue;
+                writer.write(curr + System.getProperty("line.separator"));
+            }
+            writer.close();
+            reader.close();
+            boolean delete = (new File(database.getDatabaseFileName())).delete();
+            System.out.println("Del: " + delete);
+            boolean stat = tempFile.renameTo(new File(database.getDatabaseFileName()));
+            System.out.println("Renaming: " + stat);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
             writeLock.unlock();
         }
     }

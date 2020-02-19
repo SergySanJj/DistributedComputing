@@ -5,28 +5,54 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Random;
 
 public class Main {
+    private static Random random = new Random();
+
     public static void main(String[] args) throws IOException {
         Database db = Database.create("test");
         db.dropDatabase();
         DatabaseController dbController = new DatabaseController(db);
 
+        dbController.addRecord("a", "1");
+        dbController.addRecord("b", "2");
+        dbController.addRecord("c", "3");
+
+        dbController.deleteRecord("b", "2");
+//        startAllRunners(dbController);
+    }
+
+    private static void startAllRunners(DatabaseController dbController) {
         Runner readUsername = new Runner(2, () -> {
-            dbController.getUsername("1");
+            dbController.getUsername(randomPhone());
             waitFor(100);
         });
         readUsername.startAll();
         Runner readPhone = new Runner(2, () -> {
-            dbController.getPhoneNumbers("a");
+            dbController.getPhoneNumbers(randomUsername());
             waitFor(100);
         });
         readPhone.startAll();
         Runner addUser = new Runner(2, () -> {
-            dbController.addRecord("a", "1");
+            dbController.addRecord(randomUsername(), randomPhone());
             waitFor(200);
         });
         addUser.startAll();
+    }
+
+    private static String randomPhone() {
+        return Integer.toString(Math.abs(random.nextInt()) % 90 + 10);
+    }
+
+    private static String randomUsername() {
+        int leftLimit = 97; // letter 'a'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 1;
+        return random.ints(leftLimit, rightLimit + 1)
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 
     private static void waitFor(int n) {
