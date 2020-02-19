@@ -42,7 +42,7 @@ public class Main {
     }
 
     private static String randomPhone() {
-        return Integer.toString(Math.abs(random.nextInt()) % 90 + 10);
+        return Integer.toString(Math.abs(random.nextInt()) % 10);
     }
 
     private static String randomUsername() {

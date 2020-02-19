@@ -1,36 +1,32 @@
 package com.sergeiyarema;
 
-import java.util.concurrent.Semaphore;
-
 public class ReadWriteLock {
-    static final int WRITE_LOCKED = -1, FREE = 0;
-    private Semaphore semaphore = new Semaphore(1);
+    private int readersCount = 0;
+    private boolean writing = false;
+    private Thread writerThread;
 
-    private int numberOfReaders = FREE;
-    private Thread currentWriteLockOwner;
-
-    public synchronized void acquireReadLock() throws InterruptedException {
-        while (numberOfReaders == WRITE_LOCKED) wait();
-        numberOfReaders++;
+    public synchronized void readLock() throws InterruptedException {
+        while (writing) wait();
+        readersCount++;
     }
 
-    public synchronized void releaseReadLock() {
-        if (numberOfReaders <= 0) throw new IllegalMonitorStateException();
-        numberOfReaders--;
-        if (numberOfReaders == FREE) notifyAll();
+    public synchronized void readUnlock() {
+        if (readersCount <= 0) throw new IllegalMonitorStateException();
+        readersCount--;
+        if (readersCount == 0) notifyAll();
     }
 
-    public synchronized void acquireWriteLock() throws InterruptedException {
-        while (numberOfReaders != FREE) wait();
-        numberOfReaders = WRITE_LOCKED;
-        currentWriteLockOwner = Thread.currentThread();
+    public synchronized void writeLock() throws InterruptedException {
+        while (readersCount != 0) wait();
+        writing = true;
+        writerThread = Thread.currentThread();
     }
 
-    public synchronized void releaseWriteLock() {
-        if (numberOfReaders != WRITE_LOCKED || currentWriteLockOwner != Thread.currentThread())
+    public synchronized void writeUnlock() {
+        if (!writing || writerThread != Thread.currentThread())
             throw new IllegalMonitorStateException();
-        numberOfReaders = FREE;
-        currentWriteLockOwner = null;
+        writing = false;
+        writerThread = null;
         notifyAll();
     }
 }
