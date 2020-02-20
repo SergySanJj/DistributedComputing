@@ -3,7 +3,6 @@ package com.sergeiyarema;
 public class ReadWriteLock {
     private int readersCount = 0;
     private boolean writing = false;
-    private Thread writerThread;
 
     public synchronized void readLock() throws InterruptedException {
         while (writing) wait();
@@ -19,14 +18,12 @@ public class ReadWriteLock {
     public synchronized void writeLock() throws InterruptedException {
         while (readersCount != 0) wait();
         writing = true;
-        writerThread = Thread.currentThread();
     }
 
     public synchronized void writeUnlock() {
-        if (!writing || writerThread != Thread.currentThread())
-            throw new IllegalMonitorStateException();
+        if (!writing)
+            return;
         writing = false;
-        writerThread = null;
         notifyAll();
     }
 }
