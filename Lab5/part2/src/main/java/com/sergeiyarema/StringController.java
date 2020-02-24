@@ -1,7 +1,6 @@
 package com.sergeiyarema;
 
 import java.util.Random;
-import java.util.concurrent.CyclicBarrier;
 
 public class StringController implements Runnable {
     private static Random random = new Random();
