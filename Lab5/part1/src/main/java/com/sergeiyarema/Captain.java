@@ -4,7 +4,8 @@ import java.util.concurrent.CyclicBarrier;
 
 public class Captain implements Runnable {
     private Soldier[] soldiers;
-    private int start, end;
+    private int start;
+    private int end;
     private int needToBeTurned;
     private static volatile boolean captainsAligned = false;
     private CyclicBarrier barrier;
@@ -39,9 +40,7 @@ public class Captain implements Runnable {
             }
 
             barrierWait(); // All soldiers remembered where to turn
-
-            pushUpdate();
-
+            turnIfNeeded();
             barrierWait(); // All soldiers executed turn if needed
         }
     }
@@ -58,7 +57,7 @@ public class Captain implements Runnable {
         return needToBeTurned;
     }
 
-    public void pushUpdate() {
+    private void turnIfNeeded() {
         for (int i = start; i <= end; i++) {
             soldiers[i].turnIfNeeded();
         }
