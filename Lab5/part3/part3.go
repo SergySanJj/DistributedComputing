@@ -1,101 +1,56 @@
 package main
 
-import (
-	"fmt"
-	"math/rand"
-	"time"
-)
+import "fmt"
 
 const SIZE = 500
 const MAX = 100
 
-var seed = rand.NewSource(time.Now().UnixNano())
-var random = rand.New(seed)
+func worker(pos int, g []SumArray, halt chan int, barrier *CyclicBarrier) {
+	for {
+		g[pos].Replace()
 
-type sumArray struct {
-	data       [10]int
-	sum        int
+		barrier.Await(func() {
+			if checkEquality(g) {
+				halt <- 1
+			}
+		})
+
+	}
 }
 
-func checkSum(arrays* [3]sumArray, diffs *[3][3]int) bool {
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			(*diffs)[i][j] = (*arrays)[i].sum - (*arrays)[j].sum
+func checkEquality(g []SumArray) bool {
+	var firstVal = g[0].sum
+	for i := 1; i < len(g); i++ {
+		if firstVal != g[i].sum {
+			return false
 		}
 	}
-
-	for i := 1; i < 3; i++ {
-		if (*diffs)[0][i] != 0 {
-			return true
-		}
-	}
-
-	return false
+	return true
 }
 
-func changeValue(array* [10]int, diffs* [3]int) {
-
-	sum := 0
-
-	for i:=0; i < 3; i++ {
-		sum += (*diffs)[i]
+func Print(g []SumArray) {
+	for _, e := range g {
+		e.Print()
 	}
-
-	index := random.Intn(10)
-
-	if sum > 0 {
-		(*array)[index] -= 1
-	} else {
-		(*array)[index] += 1
-	}
-}
-
-func updater(array *sumArray, diffs* [3]int, done chan int) {
-
-	changeValue(&array.data, diffs)
-
-	(*array).sum = 0
-	for i := 0; i < 3; i++ {
-		(*array).sum += (*array).data[i]
-	}
-
-	done <- 1
+	fmt.Println()
 }
 
 func main() {
-	var arrays [3]sumArray
-	var diffs [3][3]int
-	var done = make(chan int)
-
-	for i := 0; i < len(arrays); i++ {
-		sum := 0
-
-		var resultArray [10]int
-
-		for j := 0; j < 10; j++ {
-			resultArray[j] = random.Intn(MAX)
-			sum += resultArray[j]
-		}
-
-		arrays[i] = sumArray{
-			data: resultArray,
-			sum:  sum,
-		}
+	var g []SumArray
+	var halt = make(chan int)
+	var barrier = NewCyclicBarrier(1, func() {
+		Print(g)
+	})
+	for i := 0; i < 3; i++ {
+		var s = SumArray{}
+		s.Fill()
+		g = append(g, s)
 	}
 
-	fmt.Printf("%v\n\n", arrays)
-
-	for checkSum(&arrays, &diffs) {
-
-		fmt.Printf("%v\n\n", diffs)
-
-		for i := 0; i < 3; i++ {
-			go updater(&arrays[i], &diffs[i], done)
-			fmt.Println(arrays[i].data)
-		}
-
-		<- done
+	for i := range g {
+		go worker(i, g, halt, barrier)
 	}
 
-	fmt.Printf("%v\n\n", diffs)
+	<-halt
+
 }

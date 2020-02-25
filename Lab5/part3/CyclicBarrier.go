@@ -3,48 +3,45 @@ package main
 import "sync"
 
 type CyclicBarrier struct {
-	action     func()
 	generation int
 	count      int
 	parties    int
-	trip       *sync.Cond
+	condition  *sync.Cond
+	f          func()
 }
 
 func (b *CyclicBarrier) nextGeneration() {
-	// signal completion of last generation
-	b.trip.Broadcast()
+	b.condition.Broadcast()
 	b.count = b.parties
-	// set up next generation
 	b.generation++
 }
 
-func (b *CyclicBarrier) Await() {
-	b.trip.L.Lock()
-	defer b.trip.L.Unlock()
+func (b *CyclicBarrier) Await(action func()) {
+	b.condition.L.Lock()
+
+	defer b.condition.L.Unlock()
+	defer b.f()
+	defer action()
 
 	generation := b.generation
 
 	b.count--
 	index := b.count
-	//println(index)
 
 	if index == 0 {
 		b.nextGeneration()
 	} else {
 		for generation == b.generation {
-			//wait for current generation complete
-			b.trip.Wait()
+			b.condition.Wait()
 		}
-		b.action()
 	}
 }
 
-func NewCyclicBarrier(num int, action func()) *CyclicBarrier {
+func NewCyclicBarrier(num int, f func()) *CyclicBarrier {
 	b := CyclicBarrier{}
-	b.action = action
 	b.count = num
 	b.parties = num
-	b.trip = sync.NewCond(&sync.Mutex{})
-
+	b.condition = sync.NewCond(&sync.Mutex{})
+	b.f = f
 	return &b
 }
