@@ -8,16 +8,16 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.*;
 
-public class LifePanel extends JPanel {
+public class GameVisualisation extends JPanel {
     private int updateDelay = 100;
     private ReentrantReadWriteLock locker = null;
-    private Updater updater = null;
+    private GameController gameController = null;
     private Thread[] civilizations = null;
-    private LifeModel life = null;
+    private GameModel life = null;
     private int cellSize = 1;
     private int cellGap = 1;
 
-    public LifePanel() {
+    public GameVisualisation() {
         setBackground(Color.WHITE);
         MouseAdapter ma =
                 new MouseAdapter() {
@@ -89,7 +89,7 @@ public class LifePanel extends JPanel {
         addMouseMotionListener(ma);
     }
 
-    public LifeModel getLifeModel() {
+    public GameModel getLifeModel() {
         return life;
     }
 
@@ -97,14 +97,14 @@ public class LifePanel extends JPanel {
     public void initialize(int width, int height, int newCellSize) {
         cellSize = newCellSize;
         locker = new ReentrantReadWriteLock();
-        life = new LifeModel(width, height);
+        life = new GameModel(width, height);
     }
 
     public void startSimulation() {
         if (civilizations == null) {
-            updater = new Updater(this, life, locker);
-            updater.timeSleep = updateDelay;
-            CyclicBarrier barrier = new CyclicBarrier(2, updater);
+            gameController = new GameController(this, life, locker);
+            gameController.timeSleep = updateDelay;
+            CyclicBarrier barrier = new CyclicBarrier(2, gameController);
 
             civilizations = new CivilizationRunner[2];
             civilizations[0] = new CivilizationRunner(life, barrier, locker, 1);
@@ -114,14 +114,12 @@ public class LifePanel extends JPanel {
         }
     }
 
-    public void stopSimulation(JButton button) {
-        button.setEnabled(false);
+    public void stopSimulation() {
         if (civilizations != null)
             for (int i = 0; i < 2; i++) {
                 civilizations[i].interrupt();
             }
         civilizations = null;
-        button.setEnabled(true);
     }
 
     @Override
@@ -137,7 +135,7 @@ public class LifePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         if (life != null) {
-            locker.readLock().lock();
+            locker.writeLock().lock();
             super.paintComponent(g);
             Insets b = getInsets();
             for (int x = 0; x < life.getHeight(); x++) {
@@ -154,7 +152,7 @@ public class LifePanel extends JPanel {
                             cellSize);
                 }
             }
-            locker.readLock().unlock();
+            locker.writeLock().unlock();
         }
     }
 }

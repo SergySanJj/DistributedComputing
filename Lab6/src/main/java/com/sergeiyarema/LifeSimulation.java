@@ -1,27 +1,43 @@
 package com.sergeiyarema;
 
+import com.sergeiyarema.configs.Visualisation;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class LifeSimulation extends JFrame {
-    private LifePanel lifePanel;
+    private GameVisualisation gameVisualisation;
     private JButton startButton;
     private JButton stopButton;
     private JButton clearFieldButton;
 
-    private static final int panelWidth = 32;
-    private static final int panelHeight = 32;
-    private static final int cellSize = 20;
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) { // pass
+        }
+
+        SwingUtilities.invokeLater(() -> new LifeSimulation("Game of life"));
+    }
 
     private LifeSimulation(String title) {
         super(title);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        lifePanel = new LifePanel();
+        gameVisualisation = new GameVisualisation();
+        gameVisualisation.initialize(
+                Visualisation.cellsHorizontal,
+                Visualisation.cellsVertical,
+                Visualisation.cellSize
+        );
+        add(gameVisualisation);
 
-        lifePanel.initialize(panelWidth, panelHeight, cellSize);
-        add(lifePanel);
+        configureToolbar();
+        pack();
+        setVisible(true);
+    }
 
+    private void configureToolbar() {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(true);
         add(toolBar, BorderLayout.NORTH);
@@ -36,38 +52,30 @@ public class LifeSimulation extends JFrame {
 
         startButton.addActionListener(
                 e -> {
-                    lifePanel.startSimulation();
+                    gameVisualisation.startSimulation();
                     startButton.setEnabled(false);
                     stopButton.setEnabled(true);
                 });
 
         stopButton.addActionListener(
                 e -> {
-                    lifePanel.stopSimulation(startButton);
+                    gameVisualisation.stopSimulation();
                     stopButton.setEnabled(false);
+                    startButton.setEnabled(true);
                 });
 
         clearFieldButton.addActionListener(
                 e -> {
-                    synchronized (lifePanel.getLifeModel()) {
-                        lifePanel.getLifeModel().clear();
-                        lifePanel.repaint();
+                    synchronized (gameVisualisation.getLifeModel()) {
+                        gameVisualisation.getLifeModel().clear();
+                        gameVisualisation.repaint();
                     }
                 });
 
         startButton.setSize(new Dimension(100, 100));
         clearFieldButton.setSize(new Dimension(100, 100));
         stopButton.setSize(new Dimension(200, 200));
-        pack();
-        setVisible(true);
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) { // pass
-        }
 
-        SwingUtilities.invokeLater(() -> new LifeSimulation("Game of Life"));
-    }
 }
