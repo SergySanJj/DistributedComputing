@@ -16,7 +16,6 @@ public class GameModel {
 
     private final Object fieldMutex = new Object();
     private ExecutorService chunkExecutor = Executors.newFixedThreadPool(4);
-    private CyclicBarrier barrier = new CyclicBarrier(4);
 
     GameModel(int width, int height) {
         this.width = width;
@@ -52,33 +51,33 @@ public class GameModel {
     }
 
     public void simulate(int type) {
-        synchronized (fieldMutex) {
-            System.out.println("Simulating " + type);
-            List<Callable<Object>> calls = new ArrayList<>();
-            calls.add(getChunkSimulator(0, 0, width / 2, height / 2, type));
-            calls.add(getChunkSimulator(width / 2, 0, width, height / 2, type));
-            calls.add(getChunkSimulator(0, height / 2, width / 2, height, type));
-            calls.add(getChunkSimulator(width / 2, height / 2, width, height, type));
-
-            try {
+        System.out.println("Simulating " + type);
+        List<Callable<Object>> calls = new ArrayList<>();
+        int chunkSize = height / 4;
+        calls.add(getChunkSimulator(0, chunkSize, type));
+        calls.add(getChunkSimulator(chunkSize, chunkSize * 2, type));
+        calls.add(getChunkSimulator(chunkSize * 2, chunkSize * 3, type));
+        calls.add(getChunkSimulator(chunkSize * 3, chunkSize * 4, type));
+        try {
+            synchronized (fieldMutex) {
                 chunkExecutor.invokeAll(calls);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    private Callable<Object> getChunkSimulator(int x0, int y0, int x1, int y1, int type) {
+    private Callable<Object> getChunkSimulator(int x0, int x1, int type) {
         return () -> {
-            simulateChunk(x0, y0, x1, y1, type);
+            simulateChunk(x0, x1, type);
             return null;
         };
     }
 
-    private void simulateChunk(int x0, int y0, int x1, int y1, int type) {
+    private void simulateChunk(int x0, int x1, int type) {
         System.out.println("Simulating chunk" + type);
         for (int x = x0; x < x1; x++) {
-            for (int y = y0; y < y1; y++) {
+            for (int y = 0; y < width; y++) {
                 int n = countNeighbors(x, y, type);
                 backField[x][y] = simulateCell(visField[x][y], n, type);
             }
