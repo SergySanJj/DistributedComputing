@@ -57,14 +57,8 @@ public class GameModel {
             List<Callable<Object>> calls = new ArrayList<>();
             calls.add(getChunkSimulator(0, 0, width / 2, height / 2, type));
             calls.add(getChunkSimulator(width / 2, 0, width, height / 2, type));
-            calls.add(() -> {
-                simulateChunk(0, height / 2, width / 2, height, type);
-                return null;
-            });
-            calls.add(() -> {
-                simulateChunk(width / 2, height / 2, width, height, type);
-                return null;
-            });
+            calls.add(getChunkSimulator(0, height / 2, width / 2, height, type));
+            calls.add(getChunkSimulator(width / 2, height / 2, width, height, type));
 
             try {
                 chunkExecutor.invokeAll(calls);

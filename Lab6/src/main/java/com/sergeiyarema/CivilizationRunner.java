@@ -2,7 +2,6 @@ package com.sergeiyarema;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CivilizationRunner extends Thread {
     private GameModel gameModel;
