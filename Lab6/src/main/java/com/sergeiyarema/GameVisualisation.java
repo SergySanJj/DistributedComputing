@@ -10,10 +10,8 @@ import javax.swing.*;
 
 public class GameVisualisation extends JPanel {
     private int updateDelay = 100;
-    private ReentrantReadWriteLock locker = null;
-    private GameController gameController = null;
-    private Thread[] civilizations = null;
-    private GameModel life = null;
+    private Thread[] civilizations;
+    private GameModel life;
     private int cellSize = 1;
     private int cellGap = 1;
 
@@ -63,7 +61,6 @@ public class GameVisualisation extends JPanel {
 
                     private void setCell(MouseEvent e) {
                         if (life != null) {
-                            locker.writeLock().lock();
 
                             int row = e.getY() / (cellSize + cellGap);
                             int col = e.getX() / (cellSize + cellGap);
@@ -81,7 +78,6 @@ public class GameVisualisation extends JPanel {
                                     repaint();
                                 }
                             }
-                            locker.writeLock().unlock();
                         }
                     }
                 };
@@ -96,19 +92,26 @@ public class GameVisualisation extends JPanel {
     @SuppressWarnings("SameParameterValue")
     public void initialize(int width, int height, int newCellSize) {
         cellSize = newCellSize;
-        locker = new ReentrantReadWriteLock();
         life = new GameModel(width, height);
     }
 
     public void startSimulation() {
         if (civilizations == null) {
-            gameController = new GameController(this, life, locker);
-            gameController.timeSleep = updateDelay;
-            CyclicBarrier barrier = new CyclicBarrier(2, gameController);
+            CyclicBarrier barrier = new CyclicBarrier(2, () -> {
+                System.out.println("[s] paint");
+                life.swapField();
+                this.repaint();
+                try {
+                    Thread.sleep(updateDelay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                System.out.println("[e] paint");
+            });
 
             civilizations = new CivilizationRunner[2];
-            civilizations[0] = new CivilizationRunner(life, barrier, locker, 1);
-            civilizations[1] = new CivilizationRunner(life, barrier, locker, 2);
+            civilizations[0] = new CivilizationRunner(life, barrier, 1);
+            civilizations[1] = new CivilizationRunner(life, barrier, 2);
 
             for (int i = 0; i < 2; i++) civilizations[i].start();
         }
@@ -135,7 +138,6 @@ public class GameVisualisation extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         if (life != null) {
-            locker.writeLock().lock();
             super.paintComponent(g);
             Insets b = getInsets();
             for (int x = 0; x < life.getHeight(); x++) {
@@ -152,7 +154,6 @@ public class GameVisualisation extends JPanel {
                             cellSize);
                 }
             }
-            locker.writeLock().unlock();
         }
     }
 }
