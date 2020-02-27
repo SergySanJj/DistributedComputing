@@ -21,7 +21,7 @@ public class Main {
                 () -> syncCaptains(captains, soldiers)
         );
 
-        assignMarshals(arraySize, chunkSize, soldiers, captains, barrier);
+        assignCaptain(arraySize, chunkSize, soldiers, captains, barrier);
 
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         for (Captain captain : captains) {
@@ -30,10 +30,10 @@ public class Main {
         executorService.shutdown();
     }
 
-    private static void assignMarshals(int arraySize, int chunkSize,
-                                       Soldier[] soldiers,
-                                       List<Captain> captains,
-                                       CyclicBarrier barrier) {
+    private static void assignCaptain(int arraySize, int chunkSize,
+                                      Soldier[] soldiers,
+                                      List<Captain> captains,
+                                      CyclicBarrier barrier) {
         int unassignedSoldiers = arraySize;
         while (unassignedSoldiers > 0) {
             int start = arraySize - unassignedSoldiers;
