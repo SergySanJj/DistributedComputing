@@ -1,30 +1,35 @@
 package com.sergeiyarema;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class GameRunner extends Thread {
-  private GamePanel panel;
+    private static final int timeBetweenDucks = 1000;
+    private Game game;
+    private ExecutorService duckExecutor = Executors.newFixedThreadPool(4);
 
-  GameRunner(GamePanel newPanel) {
-    panel = newPanel;
-  }
-
-  @Override
-  public void run() {
-    if (panel.hunter == null) {
-      panel.hunter = new Hunter(panel.gameCreator, panel);
-      panel.hunter.start();
+    GameRunner(Game game) {
+        this.game = game;
     }
 
-    while (!isInterrupted()) {
-      if (panel.ducks.size() < panel.getMaxDucks()) {
-        Duck duck = new Duck(panel.width, panel.height, panel);
-        panel.ducks.add(duck);
-        duck.start();
-      }
-      try {
-        sleep(200);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+    @Override
+    public void run() {
+        if (game.hunter == null) {
+            game.hunter = new Hunter(game.gameCreator, game);
+            game.hunter.start();
+        }
+
+        while (!Thread.currentThread().isInterrupted()) {
+            if (game.ducks.size() < game.getMaxDucks()) {
+                Duck duck = new Duck(game.getWidth(), game.getHeight(), game);
+                game.ducks.add(duck);
+                duckExecutor.submit(duck);
+            }
+            try {
+                sleep(timeBetweenDucks);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
-  }
 }

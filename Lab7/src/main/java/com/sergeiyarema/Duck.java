@@ -4,32 +4,38 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
 
-public class Duck extends Thread {
-    int x;
-    int y;
+public class Duck implements Runnable {
+    private final int sizeX = 70;
+    private final int sizeY = 60;
+
+    private static Random random = new Random();
+
+    private int x;
+    private int y;
 
     private int speedX;
     private int speedY;
     private int width;
-
-    final int sizeX = 70;
-    final int sizeY = 60;
+    private int duckType;
+    private Boolean alive = true;
 
     private JLabel duck;
-    private GamePanel panel;
+    private Game game;
 
-    Duck(int newWidth, int newHeight, GamePanel newPanel) {
-        super();
+    private int turnRate = Math.abs(random.nextInt()) % 2000 + 1000;
+    private long lastTurned;
 
+    public Duck(int newWidth, int newHeight, Game game) {
         width = newWidth;
-        int height = newHeight - newPanel.height * 5 / 12;
-        panel = newPanel;
+        int height = newHeight - game.getHeight() * 5 / 12;
+        this.game = game;
 
-        Random random = new Random();
-        int duckType = Math.abs(random.nextInt()) % 2;
+        duckType = Math.abs(random.nextInt(2));
 
-        if (duckType == 0) duck = new JLabel(new ImageIcon(Textures.LDUCK));
-        else duck = new JLabel(new ImageIcon(Textures.RDUCK));
+        if (duckType == 0)
+            duck = new JLabel(new ImageIcon(Textures.RDUCK));
+        else
+            duck = new JLabel(new ImageIcon(Textures.LDUCK));
 
         duck.setSize(new Dimension(sizeX, sizeY));
 
@@ -38,40 +44,68 @@ public class Duck extends Thread {
         if (duckType == 1) speedX = -speedX;
 
         y = height;
-        int quarterWidth = width / 4;
-        x = width / 2 - quarterWidth / 2 + Math.abs(random.nextInt()) % quarterWidth - 2 * sizeX;
+        x = Math.abs(random.nextInt()) % (width - 2*width / 10) + 2*width / 10;
+    }
+
+    public void kill() {
+        synchronized (alive) {
+            alive = false;
+        }
     }
 
     @Override
     public void run() {
-        panel.add(duck);
-
-        boolean flag = true;
-
-        while (!isInterrupted() && flag) {
+        game.add(duck);
+        lastTurned = System.currentTimeMillis();
+        while (!Thread.currentThread().isInterrupted() && alive) {
             int nx = x + speedX;
             int ny = y + speedY;
-
-            if (speedX > 0 && nx > width) flag = false;
-            if (speedX < 0 && nx < -sizeX) flag = false;
-            if (ny < -sizeY) flag = false;
+            speedUpdater();
+            updateAliveState(nx, ny);
 
             x = nx;
             y = ny;
             duck.setLocation(x, y);
 
             try {
-                sleep(20);
+                Thread.sleep(20);
             } catch (InterruptedException e) {
-                interrupt();
+                Thread.currentThread().interrupt();
             }
         }
 
-        if (flag) panel.changedCoins(1);
-        else panel.changedCoins(-1);
+        game.remove(duck);
+        game.repaint();
+        game.ducks.remove(this);
+    }
 
-        panel.remove(duck);
-        panel.repaint();
-        panel.ducks.remove(this);
+    private void speedUpdater() {
+        if (System.currentTimeMillis() - lastTurned >= turnRate) {
+            lastTurned = System.currentTimeMillis();
+            reverseSpeed();
+        }
+    }
+
+    private void reverseSpeed() {
+        speedX = -speedX;
+        if (duckType == 0) {
+            duckType = 1;
+            duck.setIcon(new ImageIcon(Textures.LDUCK));
+        } else {
+            duckType = 0;
+            duck.setIcon(new ImageIcon(Textures.RDUCK));
+        }
+    }
+
+    private void updateAliveState(int nx, int ny) {
+        synchronized (alive) {
+            if (speedX > 0 && nx > width) alive = false;
+            else if (speedX < 0 && nx < -sizeX) alive = false;
+            if (ny < -sizeY) alive = false;
+        }
+    }
+
+    public boolean isShot(int posX, int posY) {
+        return this.x < posX && posX < this.x + this.sizeX && this.y < posY && posY < this.y + this.sizeY;
     }
 }
