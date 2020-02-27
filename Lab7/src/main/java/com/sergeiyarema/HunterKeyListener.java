@@ -3,16 +3,16 @@ package com.sergeiyarema;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HunterKeyListener implements KeyListener {
     private Game game;
+    private ExecutorService bulletExecutor;
 
     HunterKeyListener(Game newPanel) {
         game = newPanel;
-    }
-
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
+        bulletExecutor = Executors.newFixedThreadPool(game.getMaxBullets());
     }
 
     @Override
@@ -24,9 +24,11 @@ public class HunterKeyListener implements KeyListener {
                     break;
                 case KeyEvent.VK_SPACE:
                     if (game.hunter.getCountBullet() < game.getMaxBullets()) {
-                        Bullet bullet =
-                                new Bullet(game, game.hunter, game.hunter.getX() + Hunter.getSizeX() / 2, game.hunter.getY());
-                        bullet.start();
+                        bulletExecutor.execute(
+                                new Bullet(game, game.hunter,
+                                        game.hunter.getX() + Hunter.getSizeX() / 2,
+                                        game.hunter.getY()));
+
                     }
                     break;
                 case KeyEvent.VK_LEFT:
@@ -42,7 +44,6 @@ public class HunterKeyListener implements KeyListener {
                     if (game.hunter.getX() < game.getWidth() - Hunter.getSizeX() && game.hunter.getSide() != 2) {
                         game.hunter.setIcon(new ImageIcon(Textures.RHUNTER));
                         game.hunter.setSide(2);
-
                     }
                     break;
                 default:
@@ -55,5 +56,9 @@ public class HunterKeyListener implements KeyListener {
     public void keyReleased(KeyEvent keyEvent) {
         if (keyEvent.getKeyCode() == KeyEvent.VK_RIGHT || keyEvent.getKeyCode() == KeyEvent.VK_LEFT)
             game.hunter.setKeys(false, false);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent keyEvent) { // ignore
     }
 }

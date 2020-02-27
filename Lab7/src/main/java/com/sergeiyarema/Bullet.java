@@ -3,13 +3,13 @@ package com.sergeiyarema;
 import javax.swing.*;
 import java.awt.*;
 
-public class Bullet extends Thread {
+public class Bullet implements Runnable {
     private int x;
     private int y;
 
-    private static final int dy = 10;
-    private final static int sizeX = 100;
-    private final static int sizeY = 100;
+    private static final int flySpeed = 10;
+    private static final int sizeX = 100;
+    private static final int sizeY = 100;
 
     private Game game;
     private JLabel bulletLabel;
@@ -31,28 +31,29 @@ public class Bullet extends Thread {
         game.add(bulletLabel);
 
         while (!Thread.currentThread().isInterrupted()) {
-            if (y < 0) break;
-            y -= dy;
+            if (y < 0)
+                break;
+            y -= flySpeed;
 
             bulletLabel.setLocation(x - sizeX / 2, y - sizeY / 2);
 
             for (Duck duck : game.ducks) {
                 if (duck.isShot(x, y)) {
                     duck.kill();
-                    this.interrupt();
-                    break;
+                    game.remove(bulletLabel);
+                    hunter.addBullet(-1);
+                    return;
                 }
             }
 
             try {
-                sleep(10);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
 
         game.remove(bulletLabel);
-        game.repaint();
         hunter.addBullet(-1);
     }
 }

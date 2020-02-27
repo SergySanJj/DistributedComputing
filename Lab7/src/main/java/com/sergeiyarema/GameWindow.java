@@ -3,20 +3,20 @@ package com.sergeiyarema;
 import java.awt.*;
 import javax.swing.*;
 
-public class GameCreator extends JFrame {
-    private static final int gameWidth = 1000;
-    private static final int gameHeight = 600;
+public class GameWindow extends JFrame {
+    private static final int gameWidth = 1200;
+    private static final int gameHeight = 800;
 
-    private GameCreator(String title) {
+    private GameWindow(String title) {
         super(title);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(null);
 
-        this.setSize(new Dimension(gameWidth, gameHeight));
+        setSize(new Dimension(gameWidth, gameHeight));
         Dimension dim = getToolkit().getScreenSize();
-        this.setLocation(dim.width / 2 - gameWidth / 2, dim.height / 2 - gameHeight / 2);
+        setLocation(dim.width / 2 - gameWidth / 2, dim.height / 2 - gameHeight / 2);
 
         Game panel = new Game(this);
 
@@ -31,7 +31,7 @@ public class GameCreator extends JFrame {
             e.printStackTrace();
         }
         try {
-            SwingUtilities.invokeLater(() -> new GameCreator("Duck Hunt"));
+            SwingUtilities.invokeLater(() -> new GameWindow("Duck Hunt"));
         } catch (Exception e) {
             // pass
         }

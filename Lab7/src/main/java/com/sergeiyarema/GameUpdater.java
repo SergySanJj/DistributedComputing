@@ -3,24 +3,25 @@ package com.sergeiyarema;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GameRunner extends Thread {
+public class GameUpdater extends Thread {
     private static final int timeBetweenDucks = 1000;
     private Game game;
     private ExecutorService duckExecutor = Executors.newFixedThreadPool(4);
+    private ExecutorService hunterExecutor = Executors.newFixedThreadPool(1);
 
-    GameRunner(Game game) {
+    GameUpdater(Game game) {
         this.game = game;
     }
 
     @Override
     public void run() {
         if (game.hunter == null) {
-            game.hunter = new Hunter(game.gameCreator, game);
-            game.hunter.start();
+            game.hunter = new Hunter(game.gameWindow, game);
+            hunterExecutor.execute(game.hunter);
         }
 
         while (!Thread.currentThread().isInterrupted()) {
-            if (game.ducks.size() < game.getMaxDucks()) {
+            if (game.ducks.size() < Game.getMaxDucks()) {
                 Duck duck = new Duck(game.getWidth(), game.getHeight(), game);
                 game.ducks.add(duck);
                 duckExecutor.submit(duck);

@@ -4,20 +4,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class GameMouseAdapter extends MouseAdapter {
-    private Game panel;
-    private static final int maxRadius = 100;
+    private Game game;
 
     GameMouseAdapter(Game newPanel) {
-        panel = newPanel;
+        game = newPanel;
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     @Override
     public void mouseReleased(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-        for (Duck duck : panel.ducks) {
-
+        for (Duck duck : game.ducks) {
             if (duck.isShot(x, y))
                 duck.kill();
         }
