@@ -4,6 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
 
+enum DuckSide {
+    LEFT, RIGHT
+}
+
 public class Duck implements Runnable {
     private final int sizeX = 70;
     private final int sizeY = 60;
@@ -12,17 +16,17 @@ public class Duck implements Runnable {
 
     private int x;
     private int y;
-
     private int speedX;
     private int speedY;
+
     private int width;
-    private int duckType;
+    private DuckSide duckSide;
     private Boolean alive = true;
 
-    private JLabel duck;
+    private JLabel duckVisualisation;
     private Game game;
 
-    private int turnRate = Math.abs(random.nextInt()) % 2000 + 1000;
+    private int turnRate = Math.abs(random.nextInt(2000)) + 1000;
     private long lastTurned;
 
     public Duck(int newWidth, int newHeight, Game game) {
@@ -30,21 +34,21 @@ public class Duck implements Runnable {
         int height = newHeight - game.getHeight() * 5 / 12;
         this.game = game;
 
-        duckType = Math.abs(random.nextInt(2));
+        duckSide = getNewDuckType();
 
-        if (duckType == 0)
-            duck = new JLabel(new ImageIcon(Textures.RDUCK));
+        if (duckSide == DuckSide.LEFT)
+            duckVisualisation = new JLabel(new ImageIcon(Textures.LDUCK));
         else
-            duck = new JLabel(new ImageIcon(Textures.LDUCK));
+            duckVisualisation = new JLabel(new ImageIcon(Textures.RDUCK));
 
-        duck.setSize(new Dimension(sizeX, sizeY));
+        duckVisualisation.setSize(new Dimension(sizeX, sizeY));
 
         speedX = Math.abs(random.nextInt(5)) + 1;
         speedY = -Math.abs(random.nextInt(4)) - 1;
-        if (duckType == 1) speedX = -speedX;
+        if (duckSide == DuckSide.LEFT) speedX = -speedX;
 
         y = height;
-        x = Math.abs(random.nextInt()) % (width - 2*width / 10) + 2*width / 10;
+        x = Math.abs(random.nextInt(width - 2 * width / 10)) + 2 * width / 10;
     }
 
     public void kill() {
@@ -55,7 +59,7 @@ public class Duck implements Runnable {
 
     @Override
     public void run() {
-        game.add(duck);
+        game.add(duckVisualisation);
         lastTurned = System.currentTimeMillis();
         while (!Thread.currentThread().isInterrupted() && alive) {
             int nx = x + speedX;
@@ -65,7 +69,7 @@ public class Duck implements Runnable {
 
             x = nx;
             y = ny;
-            duck.setLocation(x, y);
+            duckVisualisation.setLocation(x, y);
 
             try {
                 Thread.sleep(20);
@@ -74,7 +78,7 @@ public class Duck implements Runnable {
             }
         }
 
-        game.remove(duck);
+        game.remove(duckVisualisation);
         game.repaint();
         game.ducks.remove(this);
     }
@@ -88,12 +92,16 @@ public class Duck implements Runnable {
 
     private void reverseSpeed() {
         speedX = -speedX;
-        if (duckType == 0) {
-            duckType = 1;
-            duck.setIcon(new ImageIcon(Textures.LDUCK));
+        reverseType();
+    }
+
+    private void reverseType() {
+        if (duckSide == DuckSide.LEFT) {
+            duckSide = DuckSide.RIGHT;
+            duckVisualisation.setIcon(new ImageIcon(Textures.RDUCK));
         } else {
-            duckType = 0;
-            duck.setIcon(new ImageIcon(Textures.RDUCK));
+            duckSide = DuckSide.LEFT;
+            duckVisualisation.setIcon(new ImageIcon(Textures.LDUCK));
         }
     }
 
@@ -107,5 +115,13 @@ public class Duck implements Runnable {
 
     public boolean isShot(int posX, int posY) {
         return this.x < posX && posX < this.x + this.sizeX && this.y < posY && posY < this.y + this.sizeY;
+    }
+
+    public DuckSide getNewDuckType() {
+        int r = Math.abs(random.nextInt(2));
+        if (r == 0)
+            return DuckSide.LEFT;
+        else
+            return DuckSide.RIGHT;
     }
 }
