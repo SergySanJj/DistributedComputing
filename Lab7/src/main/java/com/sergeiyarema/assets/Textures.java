@@ -1,4 +1,4 @@
-package com.sergeiyarema;
+package com.sergeiyarema.assets;
 
 public class Textures {
     private Textures() {

@@ -1,5 +1,7 @@
 package com.sergeiyarema;
 
+import com.sergeiyarema.assets.Textures;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -29,7 +31,7 @@ public class Game extends JPanel {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Image image = toolkit.getImage(Textures.CROSS);
         setCursor(toolkit.createCustomCursor(image, new Point(), "cross"));
-        addMouseListener(new GameMouseAdapter(this));
+        addMouseListener(new ShootMouseAdapter(this));
 
         GameUpdater game = new GameUpdater(this);
         game.start();

@@ -3,11 +3,11 @@ package com.sergeiyarema;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class GameMouseAdapter extends MouseAdapter {
+public class ShootMouseAdapter extends MouseAdapter {
     private Game game;
 
-    GameMouseAdapter(Game newPanel) {
-        game = newPanel;
+    ShootMouseAdapter(Game game) {
+        this.game = game;
     }
 
     @Override

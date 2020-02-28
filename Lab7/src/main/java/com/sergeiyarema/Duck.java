@@ -1,5 +1,7 @@
 package com.sergeiyarema;
 
+import com.sergeiyarema.assets.Textures;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
@@ -10,7 +12,7 @@ enum DuckSide {
 
 public class Duck implements Runnable {
     private final int sizeX = 70;
-    private final int sizeY = 60;
+    private final int sizeY = 70;
 
     private static Random random = new Random();
 

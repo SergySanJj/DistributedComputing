@@ -1,5 +1,7 @@
 package com.sergeiyarema;
 
+import com.sergeiyarema.assets.Textures;
+
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

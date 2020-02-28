@@ -1,5 +1,7 @@
 package com.sergeiyarema;
 
+import com.sergeiyarema.assets.Textures;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,7 +12,7 @@ public class Hunter implements Runnable {
     private int x;
     private int y;
 
-    private static final int sizeX = 137;
+    private static final int sizeX = 150;
     private static final int sizeY = 150;
 
     private static final int dx = 20;
