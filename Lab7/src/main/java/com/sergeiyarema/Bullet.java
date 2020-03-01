@@ -43,8 +43,8 @@ public class Bullet implements Runnable {
                     duck -> duck.isShot(x, y),
                     duck -> {
                         duck.kill();
-                        game.remove(bulletLabel);
-                        hunter.addBullet(-1);
+                        destroy();
+                        Thread.currentThread().interrupt();
                     }
             );
 
@@ -55,7 +55,14 @@ public class Bullet implements Runnable {
             }
         }
 
-        game.remove(bulletLabel);
-        hunter.addBullet(-1);
+        destroy();
+    }
+
+    private synchronized void destroy() {
+        if (bulletLabel != null) {
+            game.remove(bulletLabel);
+            bulletLabel = null;
+            hunter.addBullet(-1);
+        }
     }
 }
