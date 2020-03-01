@@ -83,7 +83,7 @@ public class Duck implements Runnable {
 
         game.remove(duckVisualisation);
         game.repaint();
-        game.ducks().remove(this);
+        game.kill(this);
     }
 
     private void speedUpdater() {

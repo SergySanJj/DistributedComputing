@@ -18,9 +18,9 @@ public class GameUpdater extends Thread {
         hunterExecutor.execute(game.hunter());
 
         while (!Thread.currentThread().isInterrupted()) {
-            if (game.ducks().size() < Game.getMaxDucks()) {
+            if (game.ducksNeeded()) {
                 Duck duck = new Duck(game.getWidth(), game.getHeight(), game);
-                game.ducks().add(duck);
+                game.addDuck(duck);
                 duckExecutor.submit(duck);
             }
             try {
