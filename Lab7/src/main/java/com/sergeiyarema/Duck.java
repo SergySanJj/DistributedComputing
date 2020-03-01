@@ -24,6 +24,7 @@ public class Duck implements Runnable {
     private int width;
     private DuckSide duckSide;
     private Boolean alive = true;
+    private final Object aliveMutex = new Object();
 
     private JLabel duckVisualisation;
     private Game game;
@@ -54,7 +55,7 @@ public class Duck implements Runnable {
     }
 
     public void kill() {
-        synchronized (alive) {
+        synchronized (aliveMutex) {
             alive = false;
         }
     }
@@ -82,7 +83,7 @@ public class Duck implements Runnable {
 
         game.remove(duckVisualisation);
         game.repaint();
-        game.ducks.remove(this);
+        game.ducks().remove(this);
     }
 
     private void speedUpdater() {
@@ -108,9 +109,11 @@ public class Duck implements Runnable {
     }
 
     private void updateAliveState(int nx, int ny) {
-        synchronized (alive) {
-            if (speedX > 0 && nx > width) alive = false;
-            else if (speedX < 0 && nx < -sizeX) alive = false;
+        synchronized (aliveMutex) {
+            if (speedX > 0 && nx > width)
+                alive = false;
+            else if (speedX < 0 && nx < -sizeX)
+                alive = false;
             if (ny < -sizeY) alive = false;
         }
     }

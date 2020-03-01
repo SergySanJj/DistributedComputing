@@ -4,6 +4,7 @@ import com.sergeiyarema.assets.Textures;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Game extends JPanel {
@@ -11,14 +12,25 @@ public class Game extends JPanel {
     private static final int maxBullets = 5;
     private static final int maxDucks = 4;
 
+
+    private Queue<Duck> ducks = new ConcurrentLinkedQueue<>();
+
+    public Queue<Duck> ducks() {
+        return ducks;
+    }
+
+    private Hunter hunter;
+
+    public Hunter hunter() {
+        return hunter;
+    }
+
+    private GameWindow gameWindow;
+
+
     public static int getMaxDucks() {
         return maxDucks;
     }
-
-    ConcurrentLinkedQueue<Duck> ducks = new ConcurrentLinkedQueue<>();
-
-    Hunter hunter = null;
-    GameWindow gameWindow;
 
     public Game(GameWindow gameWindow) {
         this.setSize(gameWindow.getSize());
@@ -33,8 +45,10 @@ public class Game extends JPanel {
         setCursor(toolkit.createCustomCursor(image, new Point(), "cross"));
         addMouseListener(new ShootMouseAdapter(this));
 
-        GameUpdater game = new GameUpdater(this);
-        game.start();
+        GameUpdater gameUpdater = new GameUpdater(this);
+        hunter = new Hunter(gameWindow, this);
+
+        gameUpdater.start();
     }
 
     synchronized int getMaxBullets() {

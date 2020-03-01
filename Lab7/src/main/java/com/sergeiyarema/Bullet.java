@@ -39,7 +39,7 @@ public class Bullet implements Runnable {
 
             bulletLabel.setLocation(x - sizeX / 2, y - sizeY / 2);
 
-            for (Duck duck : game.ducks) {
+            for (Duck duck : game.ducks()) {
                 if (duck.isShot(x, y)) {
                     duck.kill();
                     game.remove(bulletLabel);

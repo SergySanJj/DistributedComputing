@@ -14,9 +14,11 @@ public class ShootMouseAdapter extends MouseAdapter {
     public void mouseReleased(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-        for (Duck duck : game.ducks) {
-            if (duck.isShot(x, y))
+        for (Duck duck : game.ducks()) {
+            if (duck.isShot(x, y)) {
                 duck.kill();
+                break;
+            }
         }
     }
 }

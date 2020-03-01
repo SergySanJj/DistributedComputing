@@ -15,15 +15,12 @@ public class GameUpdater extends Thread {
 
     @Override
     public void run() {
-        if (game.hunter == null) {
-            game.hunter = new Hunter(game.gameWindow, game);
-            hunterExecutor.execute(game.hunter);
-        }
+        hunterExecutor.execute(game.hunter());
 
         while (!Thread.currentThread().isInterrupted()) {
-            if (game.ducks.size() < Game.getMaxDucks()) {
+            if (game.ducks().size() < Game.getMaxDucks()) {
                 Duck duck = new Duck(game.getWidth(), game.getHeight(), game);
-                game.ducks.add(duck);
+                game.ducks().add(duck);
                 duckExecutor.submit(duck);
             }
             try {

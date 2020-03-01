@@ -24,28 +24,28 @@ public class HunterKeyListener implements KeyListener {
                 case KeyEvent.VK_ESCAPE:
                     System.exit(0);
                     break;
-                case KeyEvent.VK_SPACE:
-                    if (game.hunter.getCountBullet() < game.getMaxBullets()) {
+                case KeyEvent.VK_UP:
+                    if (game.hunter().getCountBullet() < game.getMaxBullets()) {
                         bulletExecutor.execute(
-                                new Bullet(game, game.hunter,
-                                        game.hunter.getX() + Hunter.getSizeX() / 2,
-                                        game.hunter.getY()));
+                                new Bullet(game, game.hunter(),
+                                        game.hunter().getX() + Hunter.getSizeX() / 2,
+                                        game.hunter().getY()));
 
                     }
                     break;
                 case KeyEvent.VK_LEFT:
-                    game.hunter.setKeys(true, false);
-                    if (game.hunter.getX() > 0 && game.hunter.getSide() != 1) {
-                        game.hunter.setIcon(new ImageIcon(Textures.LHUNTER));
-                        game.hunter.setSide(1);
+                    game.hunter().setKeys(true, false);
+                    if (game.hunter().getX() > 0 && game.hunter().getSide() != 1) {
+                        game.hunter().setIcon(new ImageIcon(Textures.LHUNTER));
+                        game.hunter().setSide(1);
 
                     }
                     break;
                 case KeyEvent.VK_RIGHT:
-                    game.hunter.setKeys(false, true);
-                    if (game.hunter.getX() < game.getWidth() - Hunter.getSizeX() && game.hunter.getSide() != 2) {
-                        game.hunter.setIcon(new ImageIcon(Textures.RHUNTER));
-                        game.hunter.setSide(2);
+                    game.hunter().setKeys(false, true);
+                    if (game.hunter().getX() < game.getWidth() - Hunter.getSizeX() && game.hunter().getSide() != 2) {
+                        game.hunter().setIcon(new ImageIcon(Textures.RHUNTER));
+                        game.hunter().setSide(2);
                     }
                     break;
                 default:
@@ -57,7 +57,7 @@ public class HunterKeyListener implements KeyListener {
     @Override
     public void keyReleased(KeyEvent keyEvent) {
         if (keyEvent.getKeyCode() == KeyEvent.VK_RIGHT || keyEvent.getKeyCode() == KeyEvent.VK_LEFT)
-            game.hunter.setKeys(false, false);
+            game.hunter().setKeys(false, false);
     }
 
     @Override
