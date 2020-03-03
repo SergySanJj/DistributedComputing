@@ -28,9 +28,9 @@ namespace StandardMult
 		int** mult = matmul(matrixA, matrixB, n);
 		// printMatrix(mult, n);
 
-		delete matrixA;
-		delete matrixB;
-		delete mult;
+		deleteMatrix(matrixA, n);
+		deleteMatrix(matrixB, n);
+		deleteMatrix(mult, n);
 	}
 
 	void test(int testCount, int matrixN)

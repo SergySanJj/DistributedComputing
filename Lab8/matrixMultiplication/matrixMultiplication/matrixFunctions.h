@@ -32,6 +32,15 @@ int** createZeroMatrix(int n)
 	return matrix;
 }
 
+void deleteMatrix(int** matrix, int n)
+{
+	for (int i=0;i<n;i++)
+	{
+		delete[] matrix[i];
+	}
+	delete[] matrix;
+}
+
 void printMatrix(int** mat, int n)
 {
 	for (int i = 0; i < n; i++)
