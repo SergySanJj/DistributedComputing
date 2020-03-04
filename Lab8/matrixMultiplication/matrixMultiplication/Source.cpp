@@ -8,8 +8,11 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	int matrixN = 10;
-	int testCount = 1;
-	// StandardMult::test(testCount,matrixN);
-	TapeMult::test(testCount, matrixN, argc, argv);
+	int matrixN = 500;
+
+	MPI_Init(&argc, &argv);
+
+	StandardMult::standardMatrixMultiplication(matrixN);
+	TapeMult::tapeMatrixMultiplication(matrixN, argc, argv);
+	MPI_Finalize();
 }

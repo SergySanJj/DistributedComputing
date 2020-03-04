@@ -38,25 +38,12 @@ namespace TapeMult
 	// Function for memory allocation and definition of objects’ elements
 	void ProcessInitialization(double*& pMatrix, double*& pVector,
 	                           double*& pResult, double*& pProcRows, double*& pProcResult,
-	                           int& Size, int& RowNum)
+	                           int Size, int& RowNum)
 	{
 		int RestRows; // Number of rows that haven't been been distributed yet
 		int i; // Loop variable
 
-		if (ProcRank == 0)
-		{
-			do
-			{
-				printf("\nEnter size of the initial objects: \n");
-				scanf("%d", &Size);
-				if (Size < ProcNum)
-				{
-					printf("Size of the objects must be greater than"
-						"number of processes!\n ");
-				}
-			}
-			while (Size < ProcNum);
-		}
+		
 		MPI_Bcast(&Size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		RestRows = Size;
@@ -243,50 +230,21 @@ namespace TapeMult
 		delete[] pReceiveInd;
 	}
 
-	// Testing the result of parallel matrix-vector multiplication
-	void TestResult(double* pMatrix, double* pVector, double* pResult,
-	                int Size)
-	{
-		// Buffer for storing the result of serial matrix-vector multiplication
-		double* pSerialResult;
-		int equal = 0; // Flag, that shows wheather the vectors are identical
-		int i; // Loop variable
-		if (ProcRank == 0)
-		{
-			pSerialResult = new double[Size];
-			SerialResultCalculation(pMatrix, pVector, pSerialResult, Size);
-			for (i = 0; i < Size; i++)
-			{
-				if (pResult[i] != pSerialResult[i])
-					equal = 1;
-			}
-			if (equal == 1)
-				printf("The results of serial and parallel algorithms "
-					"are NOT identical. Check your code.");
-			else
-				printf("The results of serial and parallel algorithms are "
-					"identical.\n");
-			delete[] pSerialResult;
-		}
-	}
-
 	void tapeMatrixMultiplication(int n, int argc, char* argv[])
 	{
+		MPI_Barrier(MPI_COMM_WORLD);
+
 		double* pMatrix; // The first argument - initial matrix
 		double* pVector; // The second argument - initial vector
 		double* pResult; // Result vector for matrix-vector multiplication
-		int Size; // Sizes of initial matrix and vector
+		int Size = n; // Sizes of initial matrix and vector
 		double* pProcRows; // Stripe of the matrix on current process
 		double* pProcResult; // Block of result vector on current process
 		int RowNum; // Number of rows in matrix stripe
 		double start, finish, duration;
 
-		MPI_Init(&argc, &argv);
 		MPI_Comm_size(MPI_COMM_WORLD, &ProcNum);
 		MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
-
-		if (ProcRank == 0)
-			printf("Parallel matrix - vector multiplication program\n");
 
 		ProcessInitialization(pMatrix, pVector, pResult, pProcRows, pProcResult,
 		                      Size, RowNum);
@@ -302,26 +260,13 @@ namespace TapeMult
 		finish = MPI_Wtime();
 		duration = finish - start;
 
-		TestResult(pMatrix, pVector, pResult, Size);
 		if (ProcRank == 0)
 		{
-			printf("Time of execution = %f\n", duration);
+			printf("[Tape] Time of execution = %f\n", duration);
 		}
 
 		ProcessTermination(pMatrix, pVector, pResult, pProcRows, pProcResult);
-		MPI_Finalize();
-	}
 
-	void test(int testCount, int matrixN, int argc, char* argv[])
-	{
-		auto start = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < testCount; i++)
-		{
-			tapeMatrixMultiplication(matrixN, argc, argv);
-		}
-		auto stop = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-
-		std::cout << duration.count();
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 }

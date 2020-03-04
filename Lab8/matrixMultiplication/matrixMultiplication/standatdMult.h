@@ -21,28 +21,31 @@ namespace StandardMult
 
 	void standardMatrixMultiplication(int n)
 	{
-		double** matrixA = generateMatrix(n);
-		double** matrixB = generateMatrix(n);
+		MPI_Barrier(MPI_COMM_WORLD);
+
+		int ProcRank = 0;
+		MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
 
 
-		double** mult = matmul(matrixA, matrixB, n);
-		// printMatrix(mult, n);
-
-		deleteMatrix(matrixA, n);
-		deleteMatrix(matrixB, n);
-		deleteMatrix(mult, n);
-	}
-
-	void test(int testCount, int matrixN)
-	{
-		auto start = std::chrono::high_resolution_clock::now();
-		for (int i=0;i<testCount;i++)
+		if (ProcRank == 0)
 		{
-			standardMatrixMultiplication(matrixN);
-		}
-		auto stop = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+			double** matrixA = generateMatrix(n);
+			double** matrixB = generateMatrix(n);
 
-		std::cout << duration.count();
+			double start = MPI_Wtime();
+
+			double** mult = matmul(matrixA, matrixB, n);
+
+			double finish = MPI_Wtime();
+			double duration = finish - start;
+
+			printf("[Standard] Time of execution = %f\n", duration);
+
+			deleteMatrix(matrixA, n);
+			deleteMatrix(matrixB, n);
+			deleteMatrix(mult, n);
+		}
+
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 }
