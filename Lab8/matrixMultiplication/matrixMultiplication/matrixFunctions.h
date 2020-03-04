@@ -3,13 +3,13 @@
 #include <cstdlib>
 #include <ctime>
 
-int** generateMatrix(int n)
+double** generateMatrix(int n)
 {
 	std::srand(unsigned(std::time(0)));
-	int** matrix = new int* [n];
+	double** matrix = new double* [n];
 	for (int i = 0; i < n; i++)
 	{
-		matrix[i] = new int[n];
+		matrix[i] = new double[n];
 		for (int j = 0; j < n; j++)
 		{
 			matrix[i][j] = std::rand()%10;
@@ -18,12 +18,12 @@ int** generateMatrix(int n)
 	return matrix;
 }
 
-int** createZeroMatrix(int n)
+double** createZeroMatrix(int n)
 {
-	int** matrix = new int* [n];
+	double** matrix = new double* [n];
 	for (int i = 0; i < n; i++)
 	{
-		matrix[i] = new int[n];
+		matrix[i] = new double[n];
 		for (int j = 0; j < n; j++)
 		{
 			matrix[i][j] = 0;
@@ -32,7 +32,7 @@ int** createZeroMatrix(int n)
 	return matrix;
 }
 
-void deleteMatrix(int** matrix, int n)
+void deleteMatrix(double** matrix, int n)
 {
 	for (int i=0;i<n;i++)
 	{
@@ -41,7 +41,7 @@ void deleteMatrix(int** matrix, int n)
 	delete[] matrix;
 }
 
-void printMatrix(int** mat, int n)
+void printMatrix(double** mat, int n)
 {
 	for (int i = 0; i < n; i++)
 	{

@@ -7,25 +7,8 @@
 
 namespace TapeMult
 {
-	int** mult(int** matA, int** matB, int n)
-	{
-		// MPI_Init(&argc, &argv); // TODO: connect mpi calls
-		int node = 0;
-		MPI_Comm_rank(MPI_COMM_WORLD, &node);
-
-		if (node == 0)
-		{
-			std::cout << "control node\n";
-		}
-
-		std::cout << "Hi Nikita from " << node << std::endl;
-		MPI_Finalize();
-
-		return generateMatrix(5);
-	}
-
-	int ProcNum; // Number of available processes
-	int ProcRank; // Rank of current process
+	int ProcNum; 
+	int ProcRank;
 
 	// Function for simple definition of matrix and vector elements
 	void DummyDataInitialization(double* pMatrix, double* pVector, int Size)
@@ -305,21 +288,15 @@ namespace TapeMult
 		if (ProcRank == 0)
 			printf("Parallel matrix - vector multiplication program\n");
 
-		// Memory allocation and data initialization
 		ProcessInitialization(pMatrix, pVector, pResult, pProcRows, pProcResult,
 		                      Size, RowNum);
 
 		start = MPI_Wtime();
 
-		// Distributing the initial objects between the processes
 		DataDistribution(pMatrix, pProcRows, pVector, Size, RowNum);
-		//TestDistribution(pMatrix, pVector, pProcRows, Size, RowNum);
 
-		// Process rows and vector multiplication
 		ParallelResultCalculation(pProcRows, pVector, pProcResult, Size, RowNum);
-		//TestPartialResults(pProcResult, RowNum);
 
-		// Result replication
 		ResultReplication(pProcResult, pResult, Size, RowNum);
 
 		finish = MPI_Wtime();
@@ -331,7 +308,6 @@ namespace TapeMult
 			printf("Time of execution = %f\n", duration);
 		}
 
-		// Process termination
 		ProcessTermination(pMatrix, pVector, pResult, pProcRows, pProcResult);
 		MPI_Finalize();
 	}

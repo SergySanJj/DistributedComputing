@@ -7,9 +7,9 @@
 
 namespace StandardMult
 {
-	int** matmul(int** matA, int** matB, int n)
+	double** matmul(double** matA, double** matB, int n)
 	{
-		int** res = createZeroMatrix(n);
+		double** res = createZeroMatrix(n);
 
 		for (int i = 0; i < n; i++)
 			for (int j = 0; j < n; j++)
@@ -21,11 +21,11 @@ namespace StandardMult
 
 	void standardMatrixMultiplication(int n)
 	{
-		int** matrixA = generateMatrix(n);
-		int** matrixB = generateMatrix(n);
+		double** matrixA = generateMatrix(n);
+		double** matrixB = generateMatrix(n);
 
 
-		int** mult = matmul(matrixA, matrixB, n);
+		double** mult = matmul(matrixA, matrixB, n);
 		// printMatrix(mult, n);
 
 		deleteMatrix(matrixA, n);
