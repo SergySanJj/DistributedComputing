@@ -3,51 +3,43 @@
 #include <cstdlib>
 #include <ctime>
 
-double** generateMatrix(int n)
+double* generateMatrix(int n)
 {
-	std::srand(unsigned(std::time(0)));
-	double** matrix = new double* [n];
-	for (int i = 0; i < n; i++)
+	double* matrix = new double[n*n];
+	int i, j; 
+	for (i = 0; i < n; i++)
 	{
-		matrix[i] = new double[n];
-		for (int j = 0; j < n; j++)
-		{
-			matrix[i][j] = std::rand()%10;
-		}
+		for (j = 0; j < n; j++)
+			matrix[i * n + j] = i;
 	}
 	return matrix;
 }
 
-double** createZeroMatrix(int n)
+
+double* createZeroMatrix(int n)
 {
-	double** matrix = new double* [n];
-	for (int i = 0; i < n; i++)
+	double* matrix = new double[n * n];
+	int i, j;
+	for (i = 0; i < n; i++)
 	{
-		matrix[i] = new double[n];
-		for (int j = 0; j < n; j++)
-		{
-			matrix[i][j] = 0;
-		}
+		for (j = 0; j < n; j++)
+			matrix[i * n + j] = 0;
 	}
 	return matrix;
 }
 
-void deleteMatrix(double** matrix, int n)
+void deleteMatrix(double* matrix)
 {
-	for (int i=0;i<n;i++)
-	{
-		delete[] matrix[i];
-	}
 	delete[] matrix;
 }
 
-void printMatrix(double** mat, int n)
+void printMatrix(double* mat, int n)
 {
 	for (int i = 0; i < n; i++)
 	{
 		for (int j = 0; j < n; j++)
 		{
-			std::cout << mat[i][j] << " ";
+			std::cout << mat[i*n+j] << " ";
 		}
 		std::cout << std::endl;
 	}

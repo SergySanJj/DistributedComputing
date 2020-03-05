@@ -7,16 +7,12 @@
 
 namespace StandardMult
 {
-	double** matmul(double** matA, double** matB, int n)
+	void matmul(double* matA, double* matB, int n, double* res)
 	{
-		double** res = createZeroMatrix(n);
-
 		for (int i = 0; i < n; i++)
 			for (int j = 0; j < n; j++)
 				for (int k = 0; k < n; k++)
-					res[i][j] += matA[i][k] * matB[k][j];
-
-		return res;
+					res[i*n+j] += matA[i*n+k] * matB[k*n+j];
 	}
 
 	void standardMatrixMultiplication(int n)
@@ -29,21 +25,23 @@ namespace StandardMult
 
 		if (ProcRank == 0)
 		{
-			double** matrixA = generateMatrix(n);
-			double** matrixB = generateMatrix(n);
+			double* matrixA = generateMatrix(n);
+			double* matrixB = generateMatrix(n);
+			double* res = createZeroMatrix(n);
 
 			double start = MPI_Wtime();
 
-			double** mult = matmul(matrixA, matrixB, n);
+			matmul(matrixA, matrixB, n, res);
 
 			double finish = MPI_Wtime();
 			double duration = finish - start;
 
 			printf("[Standard] Time of execution = %f\n", duration);
+			printMatrix(res, n);
 
-			deleteMatrix(matrixA, n);
-			deleteMatrix(matrixB, n);
-			deleteMatrix(mult, n);
+			deleteMatrix(matrixA);
+			deleteMatrix(matrixB);
+			deleteMatrix(res);
 		}
 
 		MPI_Barrier(MPI_COMM_WORLD);

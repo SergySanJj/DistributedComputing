@@ -6,13 +6,19 @@
 
 using namespace std;
 
+
 int main(int argc, char* argv[])
 {
-	int matrixN = 500;
+	int matrixN = 4;
+	int node = 0;
 
 	MPI_Init(&argc, &argv);
 
-	StandardMult::standardMatrixMultiplication(matrixN);
-	TapeMult::tapeMatrixMultiplication(matrixN, argc, argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &node);
+	if (node == 0) {
+		StandardMult::standardMatrixMultiplication(matrixN);
+	}
+
+	TapeMult::tapeMatrixMultiplication(matrixN);
 	MPI_Finalize();
 }
